@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-workloads
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: staging
+        cluster: in-cluster
+      - env: production
+        cluster: prod-cluster
+  template:
+    metadata:
+      name: '{{env}}-app'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/T9113/argocd-gitops-multienv-template.git
+        targetRevision: HEAD
+        path: 'environments/{{env}}'
+      destination:
+        server: '{{cluster}}'
+        namespace: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
